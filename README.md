@@ -51,25 +51,3 @@ Docker Desktop starten → denselben Projektordner in VS Code öffnen → bei Be
 **F1 → Dev Containers: Reopen in Container** → **F5** für die App oder `pi` im Terminal für die KI.
 
 Bei Problemen: Docker Desktop, Schlüssel und Firmen-VPN prüfen oder deine IT fragen.
-
-<details>
-<summary>Dateien & technische Details</summary>
-
-- Oberfläche: `src/index.html`, Design: `src/static/style.css`
-- Aufgabenlogik und Beispieltickets: `src/static/app.js`
-- Python-Webserver: `src/app.py`, Python-Pakete: `.devcontainer/requirements.txt`
-- Nach Änderungen am Setup: **F1 → Dev Containers: Rebuild Container**
-- Deine Dateien bleiben im Projektordner; eine vorhandene `.env` wird auch beim Neubau nicht überschrieben.
-
-Standardmodell: `azure-gpt-5.6-luna`. Server: `https://prd.billing.zalazium.de`.
-Vorgaben: `.devcontainer/pi.py`. In Pi heißt das Modell `anox-code`;
-das Backendmodell wird über `samplingParams.model` gesendet.
-
-Optional in `.env`: `llm=ANDERER_MODELLNAME` oder `url=https://ANDERE_SERVERADRESSE`
-(`LLM` und `URL` gehen auch). Fehlende oder leere Angaben nutzen die Vorgaben.
-Danach Pi neu starten.
-
-Container und VS Code laufen als `root`. Docker baut nur aus `.devcontainer`;
-die `.env` bleibt außerhalb des Builds und wird von Git ignoriert.
-
-</details>
