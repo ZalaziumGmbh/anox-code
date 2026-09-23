@@ -1,33 +1,28 @@
 #!/opt/venv/bin/python
-"""Load the workspace's .env as data, configure Pi, then replace this process."""
+"""Load .env as data to start Pi or report the shared LiteLLM key budget."""
 
+import hashlib
 import json
+import math
 import os
 import sys
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import httpx
 from dotenv import dotenv_values
 
 # Defaults maintained centrally in GitHub. Only the key is required in .env.
 LLM_MODEL = "anox-code"
 LLM_URL = "https://prd.billing.zalazium.de"
 MODEL_ALIAS = "anox-code"
+ENV_FILE = Path("/workspace/.env")
 
 
-def configure():
-    env_file = Path("/workspace/.env")
-    # Exclusive creation never overwrites an existing file, even during parallel starts.
-    try:
-        descriptor = os.open(env_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    except FileExistsError:
-        pass
-    else:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as file:
-            file.write("key=\n")
-    if not env_file.is_file():
+def load_settings():
+    if not ENV_FILE.is_file():
         raise OSError(".env muss eine Datei sein.")
-    values = dotenv_values(env_file, encoding="utf-8-sig", interpolate=False)
+    values = dotenv_values(ENV_FILE, encoding="utf-8-sig", interpolate=False)
 
     def setting(name, default=""):
         return (
@@ -38,7 +33,7 @@ def configure():
 
     key = setting("key")
     if not key or key == "DEIN_API_SCHLUESSEL":
-        return False
+        return "", "", ""
 
     model = setting("llm", LLM_MODEL)
     base_url = setting("url", LLM_URL).rstrip("/").removesuffix("/chat/completions")
@@ -54,6 +49,21 @@ def configure():
         raise ValueError("Die optionale URL muss eine HTTPS-Basis-URL sein.")
     if not base_url.endswith("/v1"):
         base_url += "/v1"
+    return key, model, base_url
+
+
+def configure():
+    # Exclusive creation never overwrites an existing file, even during parallel starts.
+    try:
+        descriptor = os.open(ENV_FILE, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        pass
+    else:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as file:
+            file.write("key=\n")
+    key, model, base_url = load_settings()
+    if not key:
+        return False
 
     os.environ["LITELLM_API_KEY"] = key
     agent_dir = Path.home() / ".pi" / "agent"
@@ -96,7 +106,80 @@ def configure():
     return True
 
 
+def budget_summary(info):
+    """Report only the key's own cap; missing data must never look unlimited."""
+    if not isinstance(info, dict) or not {"spend", "max_budget"} <= info.keys():
+        raise ValueError("Budgetdaten fehlen.")
+    spend, limit = info["spend"], info["max_budget"]
+    for value in (spend,) if limit is None else (spend, limit):
+        if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+            raise ValueError("Ungueltige Budgetdaten.")
+
+    if limit is None:
+        summary = "Coding-Budget: kein eigenes Limit gesetzt"
+    else:
+        percent = max(0, limit - spend) / limit * 100 if limit else 0
+        summary = f"{percent:.1f} % coding budget verbleibend"
+    if info.get("blocked"):
+        summary += " (API-Schluessel gesperrt)"
+    return summary
+
+
+def show_budget():
+    try:
+        key, _, base_url = load_settings()
+        if not key:
+            print(
+                "Budget: Bitte in .env deinen API-Schluessel als key=... eintragen.",
+                file=sys.stderr,
+            )
+            return 1
+    except (OSError, TypeError, ValueError):
+        print(
+            "Budget: Bitte key und die optionale HTTPS-url in .env pruefen.",
+            file=sys.stderr,
+        )
+        return 1
+
+    try:
+        # Only the hash goes in the URL; the secret stays in the auth header.
+        # Keep any proxy path prefix when removing the OpenAI-compatible /v1.
+        response = httpx.get(
+            base_url.removesuffix("/v1") + "/key/info",
+            params={"key": hashlib.sha256(key.encode()).hexdigest()},
+            headers={"Authorization": f"Bearer {key}"},
+            timeout=15,
+            follow_redirects=False,
+        )
+        if response.status_code == 403:
+            message = (
+                "Budget nicht abrufbar (HTTP 403). "
+                "Die IT muss /key/info fuer diesen API-Schluessel freigeben."
+            )
+        elif response.status_code == 401:
+            message = "Budget: API-Schluessel abgelehnt (HTTP 401). Bitte .env pruefen."
+        elif response.status_code != 200:
+            message = f"Budget nicht abrufbar (HTTP {response.status_code})."
+        else:
+            payload = response.json()
+            if not isinstance(payload, dict):
+                raise ValueError("Ungueltige Antwort.")
+            print(budget_summary(payload.get("info")))
+            return 0
+    except httpx.RequestError:
+        message = "Budget: LiteLLM nicht erreichbar. Verbindung und Firmen-VPN pruefen."
+    except httpx.InvalidURL:
+        message = "Budget: Bitte die optionale HTTPS-url in .env pruefen."
+    except (TypeError, ValueError, OverflowError):
+        message = "Budget: LiteLLM hat keine gueltigen Budgetdaten geliefert."
+    # Never print response bodies or exception details: they may contain secrets.
+    print(message, file=sys.stderr)
+    return 1
+
+
 def main():
+    if sys.argv[1:] == ["--budget"]:
+        return show_budget()
     # Help/version remain usable even before credentials are configured.
     if sys.argv[1:] not in (["--help"], ["-h"], ["--version"], ["-v"]):
         try:

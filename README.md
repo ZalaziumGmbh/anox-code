@@ -1,53 +1,58 @@
 # anox-code
 
-Deine erste Anwendung mit Python, HTML und KI. Anleitung für Windows.
+Baue deine erste App mit Python, HTML und KI – unter Windows.
 
 ## 1. Einmal vorbereiten
 
-- [VS Code](https://code.visualstudio.com/download) installieren und öffnen.
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installieren und starten. Falls verlangt, den Rechner neu starten. Docker während der Arbeit laufen lassen.
-- In VS Code die Erweiterung [Dev Containers von Microsoft](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installieren (**Erweiterungen → Dev Containers suchen → Installieren**).
+1. [VS Code](https://code.visualstudio.com/download) installieren.
+2. [Docker Desktop](https://www.docker.com/products/docker-desktop/) installieren, starten und während der Arbeit laufen lassen. Falls verlangt, den PC neu starten.
+3. In VS Code unter **Erweiterungen** nach **Dev Containers** von Microsoft suchen und installieren.
 
 ## 2. Projekt öffnen
 
-1. **[Projekt als ZIP herunterladen](https://github.com/ZalaziumGmbh/anox-code/archive/refs/heads/main.zip)** und per Rechtsklick → **Alle extrahieren …** entpacken.
-2. In VS Code **Datei → Ordner öffnen …** wählen. Den entpackten Ordner öffnen, in dem **README.md** und **src** liegen.
+1. **[Projekt herunterladen](https://github.com/ZalaziumGmbh/anox-code/archive/refs/heads/main.zip)** → Rechtsklick auf die ZIP → **Alle extrahieren …**.
+2. In VS Code über **Datei → Ordner öffnen …** den Ordner mit **README.md** und **src** öffnen.
 3. **F1** drücken → **Dev Containers: Reopen in Container** wählen.
 
-Warte, bis unten links **Dev Container: anox-code** steht und die Erweiterungen
-installiert sind. Beim ersten Mal dauert das einige Minuten.
+Warte, bis unten links **Dev Container: anox-code** steht und alle Erweiterungen
+installiert sind. Das dauert beim ersten Mal einige Minuten.
 
 ## 3. KI-Schlüssel eintragen
 
-Öffne in VS Code die automatisch angelegte Datei **`.env`** und trage deinen
-API-Schlüssel von der IT ein:
+Öffne die automatisch angelegte Datei **`.env`** und trage den API-Schlüssel deiner IT ein:
 
 ```dotenv
 key=DEIN_API_SCHLUESSEL
 ```
 
-Mit **Strg+S** speichern. Ist der Schlüssel schon eingetragen, gehe weiter.
-Gib die Datei und den Schlüssel niemals weiter.
+Mit **Strg+S** speichern. Schon eingetragen? Weiter zu Schritt 4.
+Gib den Schlüssel nicht weiter.
 
 ## 4. App starten
 
-Drücke **F5** und wähle bei Bedarf **start**. Im Browser öffnet sich **Mein Servicetag**,
-eine Aufgaben-App mit Beispieltickets. Deine Aufgaben bleiben im Browser gespeichert.
-Öffnet sich kein Browser, klicke in VS Code unter **Ports** auf das Globus-Symbol.
+Drücke **F5** (bei Nachfrage **start** wählen). Die Beispiel-App öffnet sich im Browser.
+Falls nicht: In VS Code unter **Ports** auf das Globus-Symbol klicken.
 
-Mit **Shift+F5** stoppst du die App, mit **F5** startest du sie erneut.
+**Shift+F5** stoppt die App.
 
 ## 5. Mit der KI weiterbauen
 
-Wähle in VS Code **Terminal → Neues Terminal**, tippe `pi` ein und drücke **Enter**.
-Schreibe zum Beispiel: „Ergänze ein Feld für die Telefonnummer.“
-Nach Änderungen speichern und die Webseite neu laden.
+Öffne **Terminal → Neues Terminal**, tippe `pi` ein und drücke **Enter**.
+Schreibe zum Beispiel: „Ergänze ein Feld für die Telefonnummer.“ Danach die Webseite neu laden.
 
-Mit `/exit` beendest du die KI, mit `pi -c` setzt du die Unterhaltung später fort.
+**Beenden:** `/exit` · **Unterhaltung fortsetzen:** `pi -c`
+
+## Budget prüfen
+
+Gib im VS-Code-Terminal ein:
+
+```sh
+make budget
+```
 
 ## Später weiterarbeiten
 
-Docker Desktop starten → denselben Projektordner in VS Code öffnen → bei Bedarf
-**F1 → Dev Containers: Reopen in Container** → **F5** für die App oder `pi` im Terminal für die KI.
+Docker starten → Projektordner in VS Code öffnen → bei Bedarf
+**F1 → Dev Containers: Reopen in Container** → **F5** für die App, `pi -c` im Terminal für die KI.
 
-Bei Problemen: Docker Desktop, Schlüssel und Firmen-VPN prüfen oder deine IT fragen.
+**Probleme?** Docker, API-Schlüssel und Firmen-VPN prüfen oder die IT fragen.

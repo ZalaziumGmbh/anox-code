@@ -2,10 +2,15 @@
 # Preserve .git. Only move the local branch after the guarded push succeeds.
 
 .DEFAULT_GOAL := help
-.PHONY: help init
+.PHONY: help budget init
 
 help:
+	@echo "make budget - Zeigt das verbleibende Coding-Budget in Prozent."
 	@echo "make init  - Squash the current branch into one 'init' commit and push to origin."
+
+budget:
+	@clear 2>/dev/null || true
+	@python .devcontainer/pi.py --budget
 
 init:
 	@set -eu; \
