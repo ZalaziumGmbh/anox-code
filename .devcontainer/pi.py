@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 from dotenv import dotenv_values
 
 # Defaults maintained centrally in GitHub. Only the key is required in .env.
-LLM_MODEL = "azure-gpt-5.6-luna"
+LLM_MODEL = "anox-code"
 LLM_URL = "https://prd.billing.zalazium.de"
 MODEL_ALIAS = "anox-code"
 
