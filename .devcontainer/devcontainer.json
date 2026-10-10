@@ -10,29 +10,66 @@
   "runArgs": [
     "--security-opt=no-new-privileges",
     "--volume=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/github-plx:/root/.ssh/id_rsa:ro",
-    "--volume=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/known_hosts:/root/.ssh/known_hosts:ro"
+    "--volume=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/known_hosts:/root/.ssh/known_hosts:ro",
+    "--name=anox-code${localEnv:ZALAZIUM_DEV_SUFFIX}"
   ],
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "workspaceFolder": "/workspace",
-  "forwardPorts": [8000],
+  "forwardPorts": [
+    8000
+  ],
   "portsAttributes": {
-    "8000": {"label": "App", "onAutoForward": "openBrowser"}
+    "8000": {
+      "label": "App",
+      "onAutoForward": "openBrowser"
+    }
   },
   "mounts": [
-    "source=${devcontainerId}-pi,target=/root/.pi,type=volume"
+    "source=${localEnv:ANOX_CODE_CODEX_VOLUME},target=/root/.codex,type=volume",
+    "source=${localEnv:ANOX_CODE_CLAUDE_VOLUME},target=/root/.claude,type=volume",
+    "source=${localEnv:ANOX_CODE_PI_VOLUME},target=/root/.pi,type=volume"
   ],
-  "postCreateCommand": "pi --setup",
+  "postCreateCommand": "python3 .devcontainer/check-ai.py && pi --setup",
   "customizations": {
     "vscode": {
-      "extensions": ["ms-python.python", "ms-python.debugpy", "charliermarsh.ruff"],
+      "extensions": [
+        "ms-python.python",
+        "ms-python.debugpy",
+        "charliermarsh.ruff"
+      ],
       "settings": {
         "python.defaultInterpreterPath": "/opt/venv/bin/python",
         "python.terminal.activateEnvironment": false,
         "terminal.integrated.defaultProfile.linux": "bash",
         "editor.formatOnSave": true,
         "files.eol": "\n",
-        "[python]": {"editor.defaultFormatter": "charliermarsh.ruff"}
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        }
       }
     }
+  },
+  "overrideCommand": true,
+  "features": {
+    "./features/native-ai": {}
+  },
+  "containerEnv": {
+    "CODEX_HOME": "/root/.codex",
+    "CLAUDE_CONFIG_DIR": "/root/.claude",
+    "DISABLE_AUTOUPDATER": "1"
+  },
+  "initializeCommand": [
+    "docker",
+    "volume",
+    "inspect",
+    "${localEnv:ANOX_CODE_CODEX_VOLUME}",
+    "${localEnv:ANOX_CODE_CLAUDE_VOLUME}",
+    "${localEnv:ANOX_CODE_PI_VOLUME}",
+    "--format",
+    "{{.Name}}"
+  ],
+  "postStartCommand": "python3 .devcontainer/check-ai.py",
+  "remoteEnv": {
+    "PATH": "/usr/local/bin:/root/.local/bin:${containerEnv:PATH}"
   }
 }
