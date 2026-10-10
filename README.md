@@ -56,3 +56,11 @@ Docker starten → Projektordner in VS Code öffnen → bei Bedarf
 **F1 → Dev Containers: Reopen in Container** → **F5** für die App, `pi -c` im Terminal für die KI.
 
 **Probleme?** Docker, API-Schlüssel und Firmen-VPN prüfen oder die IT fragen.
+
+## Development container
+
+Read [native CLI state and rebuild instructions](.devcontainer/AI-STATE.md) before
+the first rebuild. Select existing developer-specific Codex/Claude volumes
+explicitly; missing selections stop creation before replacing a container.
+Native CLI binaries are installed in the development image, outside login state.
+The shared CLI additions are confined to development-container builds.

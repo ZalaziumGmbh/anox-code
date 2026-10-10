@@ -1,0 +1,7 @@
+
+
+# Development tooling and local authentication state stay outside runtime images.
+.devcontainer/
+**/.codex/
+**/.claude/
+**/.pi/
