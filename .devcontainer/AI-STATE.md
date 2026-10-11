@@ -1,5 +1,12 @@
 # Native AI tools for anox-code
 
+Choose **anox-code (developer)** when VS Code asks for a container profile.
+The previous configuration now lives at `developer/devcontainer.json`; its
+explicit volume selections, SSH mounts and container name are unchanged.
+An existing workspace must select this profile before rebuilding; use
+**Dev Containers: Switch Container** if VS Code remembers a previous selection.
+Do not choose the customer profile to recover a missing native login.
+
 The development image installs Codex 0.162.1 and Claude 2.1.287 with the official
 curl installers. Binaries live under `/opt/zalazium-ai`; the feature applies only to development builds.
 Restart checks do not download installers or inspect authentication files.

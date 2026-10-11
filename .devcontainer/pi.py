@@ -14,7 +14,7 @@ from dotenv import dotenv_values
 
 # Defaults maintained centrally in GitHub. Only the key is required in .env.
 LLM_MODEL = "anox-code"
-LLM_URL = "https://prd.billing.zalazium.de"
+LLM_URL = "https://litellm.zalazium.de"
 MODEL_ALIAS = "anox-code"
 ENV_FILE = Path("/workspace/.env")
 
@@ -37,6 +37,12 @@ def load_settings():
 
     model = setting("llm", LLM_MODEL)
     base_url = setting("url", LLM_URL).rstrip("/").removesuffix("/chat/completions")
+    # Migrate only the retired public endpoint; keep custom proxies and .env intact.
+    if base_url in (
+        "https://prd.billing.zalazium.de",
+        "https://prd.billing.zalazium.de/v1",
+    ):
+        base_url = LLM_URL
     parsed = urlsplit(base_url)
     if (
         parsed.scheme != "https"

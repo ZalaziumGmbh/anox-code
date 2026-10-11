@@ -19,7 +19,7 @@ def main():
     if os.geteuid() == 0:
         raise SystemExit('Run qualification as the isolated tester account')
     root = Path.cwd()
-    path = root / '.devcontainer/devcontainer.json'
+    path = root / '.devcontainer/developer/devcontainer.json'
     original_root, original_path = root, path
     original = path.read_text()
     config = jsonc(original)
@@ -154,7 +154,7 @@ test "$(readlink -f "$(command -v codex)")" != "$CODEX_HOME/codex"
                         ignore=shutil.ignore_patterns('.git', 'node_modules', '.venv',
                                                      '__pycache__', '.next', 'dist'))
         root = relocated / (root.name + '-renamed')
-        path = root / '.devcontainer/devcontainer.json'
+        path = root / '.devcontainer/developer/devcontainer.json'
         run(['git', 'init'])
         up(refusal=('already in use', 'qualification-' + nonce))
         if docker('inspect', '--format', '{{.State.Running}}', recreated) != 'true':

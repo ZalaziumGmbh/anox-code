@@ -177,3 +177,30 @@ def test_pi_configuration_still_uses_shared_settings(env_file, tmp_path, monkeyp
     assert provider["apiKey"] == "$LITELLM_API_KEY"
     assert pi.os.environ["LITELLM_API_KEY"] == "sk-test-only"
     assert "sk-test-only" not in json.dumps(models)
+
+
+@pytest.mark.parametrize(
+    "suffix", ["", "/", "/v1", "/v1/", "/chat/completions", "/v1/chat/completions/"]
+)
+def test_retired_url_uses_current_proxy_without_changing_env(env_file, suffix):
+    contents = f"key=sk-test-only\nurl=https://prd.billing.zalazium.de{suffix}\n"
+    env_file.write_text(contents)
+    assert pi.load_settings() == (
+        "sk-test-only", "anox-code", "https://litellm.zalazium.de/v1"
+    )
+    assert env_file.read_text() == contents
+
+
+def test_default_is_current_proxy(env_file):
+    assert pi.load_settings()[2] == "https://litellm.zalazium.de/v1"
+
+
+@pytest.mark.parametrize("url", [
+    "https://prd.billing.zalazium.de/custom/v1",
+    "https://prd.billing.zalazium.de:8443/v1",
+    "https://prd.billing.zalazium.de.example.org/v1",
+    "https://proxy.example.org/v1",
+])
+def test_custom_proxy_is_preserved(env_file, url):
+    env_file.write_text(f"key=sk-test-only\nurl={url}\n")
+    assert pi.load_settings()[2] == url

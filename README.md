@@ -12,9 +12,12 @@ Baue deine erste App mit Python, HTML und KI – unter Windows.
 
 1. **[Projekt herunterladen](https://github.com/ZalaziumGmbh/anox-code/archive/refs/heads/main.zip)** → Rechtsklick auf die ZIP → **Alle extrahieren …**.
 2. In VS Code über **Datei → Ordner öffnen …** den Ordner mit **README.md** und **src** öffnen.
-3. **F1** drücken → **Dev Containers: Reopen in Container** wählen.
+3. Press **F1** → **Dev Containers: Reopen in Container** → select **anox-code (customer)**.
+   This profile needs no SSH key or developer volume configuration.
+   Existing developer installations: select **anox-code (developer)** and follow
+   [the state-preservation instructions](.devcontainer/AI-STATE.md) before rebuilding.
 
-Warte, bis unten links **Dev Container: anox-code** steht und alle Erweiterungen
+Warte, bis unten links **Dev Container: anox-code (customer)** steht und alle Erweiterungen
 installiert sind. Das dauert beim ersten Mal einige Minuten.
 
 ## 3. KI-Schlüssel eintragen
@@ -27,6 +30,10 @@ key=DEIN_API_SCHLUESSEL
 
 Mit **Strg+S** speichern. Schon eingetragen? Weiter zu Schritt 4.
 Gib den Schlüssel nicht weiter.
+
+The default endpoint is `https://litellm.zalazium.de/v1`. Existing coding keys
+remain valid. Known `https://prd.billing.zalazium.de` URLs are mapped to this
+endpoint without rewriting `.env`; custom proxy URLs remain unchanged.
 
 ## 4. App starten
 
