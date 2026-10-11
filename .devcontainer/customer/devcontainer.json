@@ -1,0 +1,48 @@
+{
+  "name": "anox-code (customer)",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "containerUser": "root",
+  "remoteUser": "root",
+  "init": true,
+  "runArgs": [
+    "--security-opt=no-new-privileges"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [
+    8000
+  ],
+  "portsAttributes": {
+    "8000": {
+      "label": "App",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "mounts": [
+    "source=${devcontainerId}-pi,target=/root/.pi,type=volume"
+  ],
+  "postCreateCommand": "pi --setup",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.debugpy",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        "python.terminal.activateEnvironment": false,
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "files.eol": "\n",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        }
+      }
+    }
+  },
+  "overrideCommand": true
+}

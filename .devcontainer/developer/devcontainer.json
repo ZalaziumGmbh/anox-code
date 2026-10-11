@@ -1,8 +1,8 @@
 {
-  "name": "anox-code",
+  "name": "anox-code (developer)",
   "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
+    "dockerfile": "../Dockerfile",
+    "context": ".."
   },
   "containerUser": "root",
   "remoteUser": "root",
@@ -51,7 +51,7 @@
   },
   "overrideCommand": true,
   "features": {
-    "./features/native-ai": {}
+    "../features/native-ai": {}
   },
   "containerEnv": {
     "CODEX_HOME": "/root/.codex",
