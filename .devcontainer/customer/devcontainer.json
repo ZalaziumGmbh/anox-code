@@ -22,8 +22,11 @@
     }
   },
   "mounts": [
-    "source=${devcontainerId}-pi,target=/root/.pi,type=volume"
+    "source=anox-code-customer${localEnv:ZALAZIUM_DEV_SUFFIX}-volume,target=/persist,type=volume"
   ],
+  "containerEnv": {
+    "PI_CODING_AGENT_DIR": "/persist/pi/agent"
+  },
   "postCreateCommand": "pi --setup",
   "customizations": {
     "vscode": {

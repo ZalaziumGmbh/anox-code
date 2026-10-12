@@ -13,7 +13,7 @@ Baue deine erste App mit Python, HTML und KI – unter Windows.
 1. **[Projekt herunterladen](https://github.com/ZalaziumGmbh/anox-code/archive/refs/heads/main.zip)** → Rechtsklick auf die ZIP → **Alle extrahieren …**.
 2. In VS Code über **Datei → Ordner öffnen …** den Ordner mit **README.md** und **src** öffnen.
 3. Press **F1** → **Dev Containers: Reopen in Container** → select **anox-code (customer)**.
-   This profile needs no SSH key or developer volume configuration.
+   This profile needs no SSH key or volume configuration.
    Existing developer installations: select **anox-code (developer)** and follow
    [the state-preservation instructions](.devcontainer/AI-STATE.md) before rebuilding.
 
@@ -67,7 +67,7 @@ Docker starten → Projektordner in VS Code öffnen → bei Bedarf
 ## Development container
 
 Read [native CLI state and rebuild instructions](.devcontainer/AI-STATE.md) before
-the first rebuild. Select existing developer-specific Codex/Claude volumes
-explicitly; missing selections stop creation before replacing a container.
+the first rebuild. All Codex/Claude/Pi state lives in the private volume
+`anox-code-volume` at `/persist`; migrate older separate volumes first.
 Native CLI binaries are installed in the development image, outside login state.
 The shared CLI additions are confined to development-container builds.

@@ -72,7 +72,8 @@ def configure():
         return False
 
     os.environ["LITELLM_API_KEY"] = key
-    agent_dir = Path.home() / ".pi" / "agent"
+    # Devcontainers keep Pi state in their private volume; the default stays ~/.pi/agent.
+    agent_dir = Path(os.environ.get("PI_CODING_AGENT_DIR") or Path.home() / ".pi" / "agent")
     agent_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
     os.environ["PI_CODING_AGENT_DIR"] = str(agent_dir)
     models = {
