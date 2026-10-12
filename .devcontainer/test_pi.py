@@ -179,6 +179,15 @@ def test_pi_configuration_still_uses_shared_settings(env_file, tmp_path, monkeyp
     assert "sk-test-only" not in json.dumps(models)
 
 
+def test_pi_configuration_honours_agent_directory(env_file, tmp_path, monkeypatch):
+    monkeypatch.setattr(pi.Path, "home", lambda: tmp_path / "home")
+    monkeypatch.setenv("LITELLM_API_KEY", "")
+    monkeypatch.setenv("PI_CODING_AGENT_DIR", str(tmp_path / "persist/pi/agent"))
+    assert pi.configure() is True
+    assert (tmp_path / "persist/pi/agent/models.json").is_file()
+    assert not (tmp_path / "home").exists()
+
+
 @pytest.mark.parametrize(
     "suffix", ["", "/", "/v1", "/v1/", "/chat/completions", "/v1/chat/completions/"]
 )

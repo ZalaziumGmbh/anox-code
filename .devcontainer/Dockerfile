@@ -40,7 +40,8 @@ RUN python -m venv /opt/venv \
     && pip install --no-compile --only-binary=:all: -r /tmp/requirements.txt \
     && pip check \
     && rm /tmp/requirements.txt \
-    && mkdir -p /root/.pi/agent /workspace \
+    && install -d -m 0700 -o root -g root /persist /persist/pi /persist/pi/agent \
+    && mkdir -p /workspace \
     && printf 'export PATH=/opt/venv/bin:$PATH\n' > /etc/profile.d/python-venv.sh
 
 COPY --chmod=755 pi.py /usr/local/bin/pi

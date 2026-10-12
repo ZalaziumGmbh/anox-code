@@ -1,8 +1,8 @@
 # Native AI tools for anox-code
 
 Choose **anox-code (developer)** when VS Code asks for a container profile.
-The previous configuration now lives at `developer/devcontainer.json`; its
-explicit volume selections, SSH mounts and container name are unchanged.
+The developer profile lives at `developer/devcontainer.json`; its SSH mounts and
+container name are unchanged.
 An existing workspace must select this profile before rebuilding; use
 **Dev Containers: Switch Container** if VS Code remembers a previous selection.
 Do not choose the customer profile to recover a missing native login.
@@ -11,51 +11,51 @@ The development image installs Codex 0.162.1 and Claude 2.1.287 with the officia
 curl installers. Binaries live under `/opt/zalazium-ai`; the feature applies only to development builds.
 Restart checks do not download installers or inspect authentication files.
 
-Before the first rebuild, inspect the previous container's mount names, targets
-and owner with `docker inspect --format '{{json .Mounts}}' <old-container>`.
-Do not display login files. Keep the old container and volumes until acceptance.
-Set these host environment variables before launching your editor:
+## State volume
 
-```sh
-export ANOX_CODE_CODEX_VOLUME='<your-existing-codex-volume>'
-export ANOX_CODE_CLAUDE_VOLUME='<your-existing-claude-volume>'
-```
+All tool state lives in one private, root-owned volume `anox-code-volume`, mounted at
+`/persist`; the development user is root. `CODEX_HOME=/persist/codex`,
+`CLAUDE_CONFIG_DIR=/persist/claude` (including `.claude.json`) and
+`PI_CODING_AGENT_DIR=/persist/pi/agent`. Docker fills a new volume from the image's
+private skeleton; no host variables or manual volume creation are needed. The name
+survives rebuilds, branch switches and folder renames.
+Codex keeps its self-updating app-server daemon under `/persist/codex/packages/`.
+`check-ai.py` refuses a missing, foreign-owned or group/other-readable `/persist`.
 
-For a new workspace use stable developer-specific names, for example
-`anox-code-alice-codex` and `anox-code-alice-claude`. Never share a login volume
-between founders. Explicitly create both volumes with `docker volume create`
-only for a new login; initialization checks volume metadata and refuses missing
-selections before a container can replace the old one. Branch switches and repository renames must keep these names.
-If authentication exists only in the previous container's writable layer, copy it
-locally into the chosen volumes before rebuilding; preserve the separate
-`~/.claude.json` as `.claude/.claude.json`. Do not commit or upload either cache.
-The previous state must remain available until a real login survives a rebuild.
+The main container is `anox-code`. A simultaneous checkout sets
+`ZALAZIUM_DEV_SUFFIX=-<name>`, which selects both a separate container name and
+volume `anox-code-<name>-volume`; Docker refuses an occupied name instead of replacing it.
+Do not have two CLI sessions write the same state concurrently.
 
-The main container is `anox-code`. A simultaneous checkout may set
-`ZALAZIUM_DEV_SUFFIX=-prd`; Docker refuses an occupied name instead of replacing it.
-Use separate state volumes for simultaneously running checkouts; do not have two
-CLI sessions write the same state concurrently. The development user remains root.
-Verify both CLIs, log in personally, restart and rebuild, then verify the same
-login still works. Synthetic state tests do not prove provider authentication.
+The customer profile mounts `anox-code-customer-volume` at `/persist` and keeps only
+Pi state in `/persist/pi/agent`. Customer hosts need no migration: `pi --setup`
+regenerates that state from `.env` when the container is created.
 
-Previous state mount declarations (choose their actual existing volume IDs):
+## Migration from separate volumes
 
-- `source=${devcontainerId}-pi,target=/root/.pi,type=volume`
-
-Also set `ANOX_CODE_PI_VOLUME` to the existing Pi volume before rebuilding.
+Older developer setups used the host variables `ANOX_CODE_CODEX_VOLUME`,
+`ANOX_CODE_CLAUDE_VOLUME` and `ANOX_CODE_PI_VOLUME` at `/root/.codex`, `/root/.claude`
+and `/root/.pi`. Migrate them on the Docker host, outside any devcontainer, with
+Mastermind's `scripts/devcontainer_volume.py`: without arguments it lists
+devcontainers; `<old-container> anox-code-volume` previews and `--apply` stops the
+container and copies the state without printing contents. It skips Codex packages and
+daemon runtime records, keeps newer target state, refuses conflicts and leaves the old
+volumes untouched. Pi state can also be regenerated with `pi --setup`. Then rebuild,
+verify the CLIs without re-login, and keep the old volumes until a separately approved
+deletion. Do not commit or upload login state.
 
 ## Synthetic qualification
 
 Run `.devcontainer/qualify.py` only as an isolated unprivileged tester on a clean
 source copy with a rootless Docker daemon and `@devcontainers/cli` 0.89.0 on PATH.
 Pass only the tester HOME/PATH, XDG_RUNTIME_DIR and DOCKER_HOST environment.
-The checker refuses a runtime `.env`, creates an empty synthetic one, and selects
-new labelled state volumes without using developer authentication. It exercises
-missing-volume refusal, native CLI versions, initial setup, stop/start and
+The checker refuses a runtime `.env`, creates an empty synthetic one, and selects a
+new labelled state volume through `ZALAZIUM_DEV_SUFFIX` without using developer
+authentication. It qualifies the developer profile only; the customer profile has no
+native CLIs and is not covered. It exercises the private root-owned `/persist`
+(including the Pi directory), native CLI versions, initial setup, stop/start and
 container recreation, refusal of a conflicting checkout, and folder rename with
 a persistent synthetic marker. It restores the public
 configuration and removes only its own containers and labelled volumes.
-For nonroot development users, the rootless test copies the clean source into a
-disposable workspace volume to preserve user ownership without changing host files.
 Current full build/lifecycle coverage is Linux amd64; another platform needs its
 own qualification. A synthetic marker does not establish real login persistence.
