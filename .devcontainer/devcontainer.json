@@ -1,8 +1,8 @@
 {
-  "name": "anox-code (developer)",
+  "name": "anox-code",
   "build": {
-    "dockerfile": "../Dockerfile",
-    "context": ".."
+    "dockerfile": "Dockerfile",
+    "context": "."
   },
   "containerUser": "root",
   "remoteUser": "root",
@@ -27,7 +27,8 @@
   "mounts": [
     "source=anox-code${localEnv:ZALAZIUM_DEV_SUFFIX}-volume,target=/persist,type=volume"
   ],
-  "postCreateCommand": "python3 .devcontainer/check-ai.py && pi --setup",
+  "postCreateCommand": "pi --setup",
+  "postStartCommand": "python3 .devcontainer/check-ai.py",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -47,18 +48,5 @@
       }
     }
   },
-  "overrideCommand": true,
-  "features": {
-    "../features/native-ai": {}
-  },
-  "containerEnv": {
-    "CODEX_HOME": "/persist/codex",
-    "CLAUDE_CONFIG_DIR": "/persist/claude",
-    "PI_CODING_AGENT_DIR": "/persist/pi/agent",
-    "DISABLE_AUTOUPDATER": "1"
-  },
-  "postStartCommand": "python3 .devcontainer/check-ai.py",
-  "remoteEnv": {
-    "PATH": "/usr/local/bin:/root/.local/bin:${containerEnv:PATH}"
-  }
+  "overrideCommand": true
 }

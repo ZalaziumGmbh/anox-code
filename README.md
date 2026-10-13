@@ -12,12 +12,9 @@ Baue deine erste App mit Python, HTML und KI – unter Windows.
 
 1. **[Projekt herunterladen](https://github.com/ZalaziumGmbh/anox-code/archive/refs/heads/main.zip)** → Rechtsklick auf die ZIP → **Alle extrahieren …**.
 2. In VS Code über **Datei → Ordner öffnen …** den Ordner mit **README.md** und **src** öffnen.
-3. Press **F1** → **Dev Containers: Reopen in Container** → select **anox-code (customer)**.
-   This profile needs no SSH key or volume configuration.
-   Existing developer installations: select **anox-code (developer)** and follow
-   [the state-preservation instructions](.devcontainer/AI-STATE.md) before rebuilding.
+3. **F1** → **Dev Containers: Reopen in Container**.
 
-Warte, bis unten links **Dev Container: anox-code (customer)** steht und alle Erweiterungen
+Warte, bis unten links **Dev Container: anox-code** steht und alle Erweiterungen
 installiert sind. Das dauert beim ersten Mal einige Minuten.
 
 ## 3. KI-Schlüssel eintragen
@@ -66,8 +63,9 @@ Docker starten → Projektordner in VS Code öffnen → bei Bedarf
 
 ## Development container
 
-Read [native CLI state and rebuild instructions](.devcontainer/AI-STATE.md) before
-the first rebuild. All Codex/Claude/Pi state lives in the private volume
-`anox-code-volume` at `/persist`; migrate older separate volumes first.
-Native CLI binaries are installed in the development image, outside login state.
-The shared CLI additions are confined to development-container builds.
+Ein Container für alle: Das Image enthält pi, Codex und Claude (Versionen im
+`Dockerfile`). Alle Login- und Agent-Daten liegen im Volume `anox-code-volume` unter
+`/persist` und überstehen Rebuilds. Für einen zweiten, parallelen Checkout auf dem Host
+`ZALAZIUM_DEV_SUFFIX=-<name>` setzen; das ergibt eigenen Container- und Volume-Namen.
+`~/.ssh/github-plx` und `~/.ssh/known_hosts` werden schreibgeschützt eingebunden; fehlen
+sie auf dem Host, legt Docker dort leere Ordner an (für Kunden ohne Auswirkung).

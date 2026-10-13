@@ -9,11 +9,16 @@ ENV PYTHONUNBUFFERED=1 \
     PATH=/opt/venv/bin:$PATH \
     LANG=C.UTF-8 \
     EDITOR=nano \
-    PI_OFFLINE=1
+    PI_OFFLINE=1 \
+    CODEX_HOME=/persist/codex \
+    CLAUDE_CONFIG_DIR=/persist/claude \
+    PI_CODING_AGENT_DIR=/persist/pi/agent \
+    DISABLE_AUTOUPDATER=1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        ca-certificates curl git openssh-client htop ripgrep fd-find make procps less nano \
+       libatomic1 libstdc++6 \
     && ln -s /usr/bin/fdfind /usr/local/bin/fd \
     && git config --system --add safe.directory /workspace \
     && rm -rf /var/lib/apt/lists/*
@@ -35,12 +40,34 @@ RUN set -eu; \
     rm /tmp/pi.tar.gz; \
     /opt/pi/pi --version
 
+# Native Codex and Claude CLIs, pinned; built in a throwaway HOME without credentials.
+ARG CODEX_VERSION=0.162.1
+ARG CLAUDE_VERSION=2.1.287
+RUN set -eu; \
+    stage=$(mktemp -d); \
+    curl -fsSL --retry 3 https://chatgpt.com/codex/install.sh -o "$stage/codex.sh"; \
+    curl -fsSL --retry 3 https://claude.ai/install.sh -o "$stage/claude.sh"; \
+    env -i HOME="$stage" PATH=/usr/local/bin:/usr/bin:/bin CODEX_NON_INTERACTIVE=1 \
+      sh "$stage/codex.sh" --release "$CODEX_VERSION"; \
+    env -i HOME="$stage" PATH=/usr/local/bin:/usr/bin:/bin \
+      bash "$stage/claude.sh" "$CLAUDE_VERSION"; \
+    mkdir -p /opt/zalazium-ai; \
+    cp -a "$(readlink -f "$stage/.codex/packages/standalone/current")" /opt/zalazium-ai/codex; \
+    if [ -x /opt/zalazium-ai/codex/bin/codex ]; then codex=/opt/zalazium-ai/codex/bin/codex; \
+    else codex=/opt/zalazium-ai/codex/codex; fi; \
+    ln -s "$codex" /usr/local/bin/codex; \
+    install -m 0755 "$(readlink -f "$stage/.local/bin/claude")" /opt/zalazium-ai/claude; \
+    ln -s /opt/zalazium-ai/claude /usr/local/bin/claude; \
+    rm -rf "$stage"; \
+    test "$(codex --version)" = "codex-cli $CODEX_VERSION"; \
+    claude --version | grep -F "$CLAUDE_VERSION" >/dev/null
+
 COPY requirements.txt /tmp/requirements.txt
 RUN python -m venv /opt/venv \
     && pip install --no-compile --only-binary=:all: -r /tmp/requirements.txt \
     && pip check \
     && rm /tmp/requirements.txt \
-    && install -d -m 0700 -o root -g root /persist /persist/pi /persist/pi/agent \
+    && install -d -m 0700 -o root -g root /persist /persist/codex /persist/claude /persist/pi /persist/pi/agent \
     && mkdir -p /workspace \
     && printf 'export PATH=/opt/venv/bin:$PATH\n' > /etc/profile.d/python-venv.sh
 
